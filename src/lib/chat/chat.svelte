@@ -14,8 +14,8 @@
         Pusher.logToConsole = true;
 
         const pusher = new Pusher('0448764325c710daa90f', {
-            cluster: 'ap2',
-            encrypted: true,
+            cluster: 'ap2'
+            
         });
 
         const channel = pusher.subscribe('chat');
