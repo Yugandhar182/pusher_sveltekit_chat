@@ -1,31 +1,40 @@
-const express = require('express')
-const cors = require('cors')
-const Pusher = require("pusher");
-
-const pusher = new Pusher({
-  appId: "1680321",
-  key: "8b98eea4023b4790c6cd",
-  secret: "e4bb533882ca467e09b3",
-  cluster: "ap2",
-  useTLS: true
-});
-
+const express = require('express');
+const cors = require('cors');
+const Pusher = require('pusher');
 const app = express();
 
-app.use(cors({
-   
-}))
+const pusher = new Pusher({
+  appId: '1680321',
+  key: '8b98eea4023b4790c6cd',
+  secret: 'e4bb533882ca467e09b3',
+  cluster: 'ap2',
+  useTLS: true,
+});
 
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
 app.post('/api/messages', async (req, res) => {
-    await pusher.trigger("chat", "message", {
-        username: req.body.username,
-        message: req.body.message
+  try {
+    const { username, message } = req.body;
+
+    // Trigger the message via Pusher
+    await pusher.trigger('chat', 'message', {
+      username,
+      message,
     });
 
-    res.json([]);
-})
+    // Respond with a success message or the message data
+    const responseMessage = 'Message sent successfully'; // Modify as needed
+    res.json({ message: responseMessage });
+  } catch (error) {
+    // Handle any errors here
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request' });
+  }
+});
 
-console.log('listening to port 8000');
-app.listen(8000)
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
+});
