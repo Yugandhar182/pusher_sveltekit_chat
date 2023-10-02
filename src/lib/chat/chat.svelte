@@ -1,56 +1,58 @@
 <script>
-    import { onMount } from 'svelte';
-    import Pusher from 'pusher-js';
-    import { Input, Label, Helper, Button,Card } from 'flowbite-svelte';
-    
+  import { onMount } from 'svelte';
+  import Pusher from 'pusher-js';
+  import { Input, Label, Helper, Button, Card } from 'flowbite-svelte';
 
-    let username = '';
-    let message = '';
-    let messages = [];
-    let joined = false; // Add a variable to track if the user has joined the chat
-    let onlineUsers = [];
+  let username = '';
+  let message = '';
+  let messages = [];
+  let joined = false;
+  let socketId = null;
 
-    onMount(() => {
-        Pusher.logToConsole = true;
+  onMount(() => {
+      Pusher.logToConsole = true;
 
-        const pusher = new Pusher('8b98eea4023b4790c6cd', {
-            cluster: 'ap2'
-            
-        });
+      const pusher = new Pusher('8b98eea4023b4790c6cd', {
+          cluster: 'ap2',
+          forceTLS: true,
+      });
 
-        const channel = pusher.subscribe('chat');
-        channel.bind('message', (data) => {
-            messages = [...messages, data];
-        });
-    });
+      pusher.connection.bind("connected", () => {
+          socketId = pusher.connection.socket_id;
+          console.log('Socket ID:', socketId); // Log the socketId to the console
+      });
 
-    
-    const joinChat = () => {
-        if (username.trim() !== '') {
-            joined = true;
-        }
-    }
+      const channel = pusher.subscribe('chat');
+      channel.bind('message', (data) => {
+          messages = [...messages, data];
+      });
+  });
 
-    const submit = async () => {
-        // Check if the user has joined before allowing them to send a message
-        if (joined) {
-            await fetch('http://localhost:8000/api/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    message
-                })
-            });
+  const joinChat = () => {
+      if (username.trim() !== '') {
+          joined = true;
+      }
+  }
 
-            message = '';
-        } else {
-            alert('Please join the chat first by entering a username.');
-        }
-    }
+  const submit = async () => {
+      if (joined) {
+          await fetch('http://localhost:8000/api/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  username,
+                  message,
+                  socketId
+              })
+          });
 
-  
+          message = '';
+      } else {
+          alert('Please join the chat first by entering a username.');
+      }
+  }
 </script>
+
 
 <main>
     <div class="main-container">
