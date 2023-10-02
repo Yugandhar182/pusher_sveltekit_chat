@@ -13,7 +13,7 @@
     onMount(() => {
         Pusher.logToConsole = true;
 
-        const pusher = new Pusher('0448764325c710daa90f', {
+        const pusher = new Pusher('8b98eea4023b4790c6cd', {
             cluster: 'ap2'
             
         });
